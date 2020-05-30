@@ -78,7 +78,7 @@ class MapboxNavigation {
       "destinationName": destination.name,
       "destinationLatitude": destination.latitude,
       "destinationLongitude": destination.longitude,
-      "stops": waypoints,
+      "waypoints": waypoints,
       "mode": mode.toString().split('.').last,
       "simulateRoute": simulateRoute,
       "language": language,
