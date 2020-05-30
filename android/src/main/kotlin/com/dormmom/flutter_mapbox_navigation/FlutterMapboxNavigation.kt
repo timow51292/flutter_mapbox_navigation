@@ -38,7 +38,7 @@ class FlutterMapboxNavigation : MethodChannel.MethodCallHandler, EventChannel.St
     var _origin: Point? = null
     var _destination: Point? = null
 
-    var _waypoints: List<Any>? = null
+    var _waypoints: List<Any?> = null
     var _navigationMode: String? =  "drivingWithTraffic"
     var _simulateRoute: Boolean = false
     var _language: String? = null
