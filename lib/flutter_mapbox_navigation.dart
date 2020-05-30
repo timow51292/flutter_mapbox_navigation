@@ -71,6 +71,12 @@ class MapboxNavigation {
     assert(destination.name != null);
     assert(destination.latitude != null);
     assert(destination.longitude != null);
+    assert(waypoints != null);
+    waypoints.forEach((stop) {
+      assert(stop.name != null);
+      assert(stop.latitude != null);
+      assert(stop.longitude != null);
+    };
     final Map<String, Object> args = <String, dynamic>{
       "originName": origin.name,
       "originLatitude": origin.latitude,
@@ -78,7 +84,7 @@ class MapboxNavigation {
       "destinationName": destination.name,
       "destinationLatitude": destination.latitude,
       "destinationLongitude": destination.longitude,
-      "stops": waypoints,
+      "waypoints": waypoints,
       "mode": mode.toString().split('.').last,
       "simulateRoute": simulateRoute,
       "language": language,

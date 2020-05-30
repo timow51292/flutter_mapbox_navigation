@@ -70,7 +70,7 @@ class RouteMapActivity : Activity(), Application.ActivityLifecycleCallbacks, OnM
     private var navigationMapRoute: NavigationMapRoute? = null
     private var destination: Point? = null
     private var waypoint: Point? = null
-    private var stops: List<Point>? = null
+    private var waypoints: List<Point>? = null
 
     private var routeRefresh: RouteRefresh? = null
     private var isRefreshing = false
@@ -175,7 +175,7 @@ class RouteMapActivity : Activity(), Application.ActivityLifecycleCallbacks, OnM
         val navigationRouteBuilder: NavigationRoute.Builder = NavigationRoute.builder(this).accessToken(accessToken)
         navigationRouteBuilder.origin(origin)
         navigationRouteBuilder.destination(destination!!)
-        stops?.forEach { navigationRouteBuilder.addWaypoint(it) }
+        waypoints?.forEach { navigationRouteBuilder.addWaypoint(it) }
         navigationRouteBuilder.enableRefresh(true)
         navigationRouteBuilder.build().getRoute(object: Callback<DirectionsResponse>{
 
