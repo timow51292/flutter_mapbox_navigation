@@ -52,14 +52,17 @@ class MapboxNavigation {
   /// [mode] defaults to drivingWithTraffic
   /// [simulateRoute] if true will simulate the route as if you were driving. Always true on iOS Simulator
   /// [language] this property affects the sentence contained within the RouteStep.instructions property, but it does not affect any road names contained in that property or other properties such as RouteStep.name. Defaults to "en" if an unsupported language is specified. The languages in this link are supported: https://docs.mapbox.com/android/navigation/overview/localization/ or https://docs.mapbox.com/ios/api/navigation/0.14.1/localization-and-internationalization.html
-  ///
+  /// [waypoints] It must have a longitude, latitude and name
   /// Begins to generate Route Progress
   ///
   Future startNavigation(
       {Location origin,
       Location destination,
+      List<Location> waypoints,
       NavigationMode mode = NavigationMode.drivingWithTraffic,
-      bool simulateRoute = false, String language, VoiceUnits units}) async {
+      bool simulateRoute = false,
+      String language,
+      VoiceUnits units}) async {
     assert(origin != null);
     assert(origin.name != null);
     assert(origin.latitude != null);
@@ -75,10 +78,11 @@ class MapboxNavigation {
       "destinationName": destination.name,
       "destinationLatitude": destination.latitude,
       "destinationLongitude": destination.longitude,
+      "stops": waypoints,
       "mode": mode.toString().split('.').last,
       "simulateRoute": simulateRoute,
-      "language" : language,
-      "units" : units?.toString()?.split('.')?.last
+      "language": language,
+      "units": units?.toString()?.split('.')?.last
     };
     await _methodChannel.invokeMethod('startNavigation', args);
     _routeProgressSubscription = _streamRouteProgress.listen(_onProgressData);
@@ -123,17 +127,22 @@ class Location {
 enum NavigationMode { walking, cycling, driving, drivingWithTraffic }
 
 ///Whether or not the units used inside the voice instruction's string are in imperial or metric.
-enum VoiceUnits { imperial, metric}
+enum VoiceUnits { imperial, metric }
 
 class NavigationView extends StatefulWidget {
   final Location origin;
   final Location destination;
+  final List<Location> waypoints;
   final bool simulateRoute;
   final String language;
   final VoiceUnits units;
 
   NavigationView(
-      {@required this.origin, @required this.destination, this.simulateRoute, this.language, this.units});
+      {@required this.origin,
+      @required this.destination,
+      this.simulateRoute,
+      this.language,
+      this.units, this.waypoints});
 
   _NavigationViewState createState() => _NavigationViewState();
 }
@@ -150,9 +159,10 @@ class _NavigationViewState extends State<NavigationView> {
       "destinationName": widget.destination.name,
       "destinationLatitude": widget.destination.latitude,
       "destinationLongitude": widget.destination.longitude,
+      "stops": widget.waypoints,
       "simulateRoute": widget.simulateRoute,
-      "language" : widget.language,
-      "units" : widget.units
+      "language": widget.language,
+      "units": widget.units
     };
     super.initState();
   }
