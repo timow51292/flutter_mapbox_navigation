@@ -37,6 +37,8 @@ class FlutterMapboxNavigation : MethodChannel.MethodCallHandler, EventChannel.St
 
     var _origin: Point? = null
     var _destination: Point? = null
+
+    var _waypoints: List<Point>? = null
     var _navigationMode: String? =  "drivingWithTraffic"
     var _simulateRoute: Boolean = false
     var _language: String? = null
@@ -56,6 +58,10 @@ class FlutterMapboxNavigation : MethodChannel.MethodCallHandler, EventChannel.St
     constructor(context: Context, activity: Activity) {
         this._context = context
         this._activity = activity;
+    }
+    class Waypoint(val name: String, val latitude: Double, val longitude: Double) {
+
+
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -83,6 +89,9 @@ class FlutterMapboxNavigation : MethodChannel.MethodCallHandler, EventChannel.St
             val destinationLatitude = arguments?.get("destinationLatitude") as? Double
             val destinationLongitude = arguments?.get("destinationLongitude") as? Double
 
+            // By Timo: Getteing stops from route
+            val stops = arguments?.get("waypoints") as? ArrayList<Waypoint>
+
             val navigationMode = arguments?.get("mode") as? String
             if(navigationMode != null)
                 _navigationMode = navigationMode;
@@ -97,26 +106,33 @@ class FlutterMapboxNavigation : MethodChannel.MethodCallHandler, EventChannel.St
             _units = units
 
 
-            if(originLatitude != null && originLongitude != null && destinationLatitude != null && destinationLongitude != null)
+            if(originLatitude != null
+                    && originLongitude != null
+                    && destinationLatitude != null
+                    && destinationLongitude != null)
             {
+
 
                 val origin = Point.fromLngLat(originLongitude, originLatitude)
                 val destination = Point.fromLngLat(destinationLongitude, destinationLatitude)
+                // By Timo: Adding all waypoints to route
+                val waypoints = stops?.map { Point.fromLngLat(it.longitude, it.latitude) }
                 _origin = origin
                 _destination = destination
+                _waypoints = waypoints
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     var haspermission = _activity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                     if(haspermission != PackageManager.PERMISSION_GRANTED) {
                         //_activity.onRequestPermissionsResult((a,b,c) => onRequestPermissionsResult)
                         _activity.requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_REQUEST_CODE)
-                        startNavigation(origin, destination, simulateRoute, language, units)
+                        startNavigation(origin, destination, simulateRoute, language, units, waypoints)
                     }
                     else
-                        startNavigation(origin, destination, simulateRoute, language, units)
+                        startNavigation(origin, destination, simulateRoute, language, units, waypoints)
                 }
                 else
-                    startNavigation(origin, destination, simulateRoute, language, units)
+                    startNavigation(origin, destination, simulateRoute, language, units, waypoints)
 
 
             }
@@ -127,7 +143,7 @@ class FlutterMapboxNavigation : MethodChannel.MethodCallHandler, EventChannel.St
         }
     }
 
-    fun startNavigation(origin: Point, destination: Point, simulateRoute: Boolean, language: String?, units: String?)
+    fun startNavigation(origin: Point, destination: Point, simulateRoute: Boolean, language: String?, units: String?, waypoints: List<Point>?)
     {
         var navigationMode = DirectionsCriteria.PROFILE_DRIVING_TRAFFIC;
         if(_navigationMode == "walking")
@@ -139,6 +155,7 @@ class FlutterMapboxNavigation : MethodChannel.MethodCallHandler, EventChannel.St
 
         var accessToken = PluginUtilities.getResourceFromContext(_context, "mapbox_access_token")
         Mapbox.getInstance(_context, accessToken)
+
 
         /*
         var navViewOptions = NavigationViewOptions.builder();
@@ -164,6 +181,8 @@ class FlutterMapboxNavigation : MethodChannel.MethodCallHandler, EventChannel.St
             else if(units == "metric")
                 voiceUnits = DirectionsCriteria.METRIC
         }
+
+
         var opt = NavigationRoute.builder(_context)
                 .accessToken(accessToken)
                 .origin(origin)
@@ -171,7 +190,13 @@ class FlutterMapboxNavigation : MethodChannel.MethodCallHandler, EventChannel.St
                 .profile(navigationMode)
                 .language(locale)
                 .voiceUnits(voiceUnits)
-                .build()
+        // By Timo: Adding all waypoints to options
+        if(waypoints?.size!! > 0)
+        for (waypoint in waypoints) {
+            opt.addWaypoint(waypoint)
+        }
+
+                opt.build()
                 .getRoute(object : Callback<DirectionsResponse> {
                     override fun onResponse(call: Call<DirectionsResponse>, response: Response<DirectionsResponse>) {
 
@@ -237,7 +262,7 @@ class FlutterMapboxNavigation : MethodChannel.MethodCallHandler, EventChannel.St
                         }
                         if(haspermission == PackageManager.PERMISSION_GRANTED) {
                             if(_origin != null && _destination != null)
-                                startNavigation(_origin!!, _destination!!, _simulateRoute, _language, _units)
+                                startNavigation(_origin!!, _destination!!, _simulateRoute, _language, _units, _waypoints)
                         }
                         // Not all permissions granted. Show some message and return.
                         return
