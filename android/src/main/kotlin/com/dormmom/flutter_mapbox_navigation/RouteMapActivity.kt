@@ -70,6 +70,8 @@ class RouteMapActivity : Activity(), Application.ActivityLifecycleCallbacks, OnM
     private var navigationMapRoute: NavigationMapRoute? = null
     private var destination: Point? = null
     private var waypoint: Point? = null
+    private var stops: List<Point>? = null
+
     private var routeRefresh: RouteRefresh? = null
     private var isRefreshing = false
     val TWENTY_FIVE_METERS: Double = 25.0
@@ -173,10 +175,7 @@ class RouteMapActivity : Activity(), Application.ActivityLifecycleCallbacks, OnM
         val navigationRouteBuilder: NavigationRoute.Builder = NavigationRoute.builder(this).accessToken(accessToken)
         navigationRouteBuilder.origin(origin)
         navigationRouteBuilder.destination(destination!!)
-        if(waypoint != null)
-        {
-            navigationRouteBuilder.addWaypoint(waypoint!!)
-        }
+        stops?.forEach { navigationRouteBuilder.addWaypoint(it) }
         navigationRouteBuilder.enableRefresh(true)
         navigationRouteBuilder.build().getRoute(object: Callback<DirectionsResponse>{
 
