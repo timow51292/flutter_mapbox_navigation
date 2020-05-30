@@ -76,7 +76,8 @@ class MapboxNavigation {
       assert(stop.name != null);
       assert(stop.latitude != null);
       assert(stop.longitude != null);
-    };
+    });
+
     final Map<String, Object> args = <String, dynamic>{
       "originName": origin.name,
       "originLatitude": origin.latitude,
@@ -148,7 +149,8 @@ class NavigationView extends StatefulWidget {
       @required this.destination,
       this.simulateRoute,
       this.language,
-      this.units, this.waypoints});
+      this.units,
+      this.waypoints});
 
   _NavigationViewState createState() => _NavigationViewState();
 }
