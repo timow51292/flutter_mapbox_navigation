@@ -38,7 +38,7 @@ class FlutterMapboxNavigation : MethodChannel.MethodCallHandler, EventChannel.St
     var _origin: Point? = null
     var _destination: Point? = null
 
-    var _waypoints: List<Any?> = null
+    var _waypoints: List<Point>? = null
     var _navigationMode: String? =  "drivingWithTraffic"
     var _simulateRoute: Boolean = false
     var _language: String? = null
@@ -116,10 +116,13 @@ class FlutterMapboxNavigation : MethodChannel.MethodCallHandler, EventChannel.St
                 val origin = Point.fromLngLat(originLongitude, originLatitude)
                 val destination = Point.fromLngLat(destinationLongitude, destinationLatitude)
                 // By Timo: Adding all waypoints to route
-                var stops = null;
+                var stops:ArrayList<Point> = ArrayList<Point>()
+                var i =0;
+
                 if(waypoints != null) {
-                 stops = waypoints?.map { Point.fromLngLat(it.longitude, it.latitude) }
-                _waypoints = stops
+                    val waypointIterator = waypoints.iterator()
+                    waypointIterator.forEach { stops.add(Point.fromLngLat(it.longitude, it.latitude)) }
+                    _waypoints = stops
                 }
                 _origin = origin
                 _destination = destination
