@@ -52,13 +52,13 @@ class MapboxNavigation {
   /// [mode] defaults to drivingWithTraffic
   /// [simulateRoute] if true will simulate the route as if you were driving. Always true on iOS Simulator
   /// [language] this property affects the sentence contained within the RouteStep.instructions property, but it does not affect any road names contained in that property or other properties such as RouteStep.name. Defaults to "en" if an unsupported language is specified. The languages in this link are supported: https://docs.mapbox.com/android/navigation/overview/localization/ or https://docs.mapbox.com/ios/api/navigation/0.14.1/localization-and-internationalization.html
-  /// [waypoints] It must have a longitude, latitude and name
+  /// [routes] It must have a longitude, latitude and name
   /// Begins to generate Route Progress
   ///
   Future startNavigation(
       {Location origin,
       Location destination,
-      List<Location> waypoints,
+      String waypoints,
       NavigationMode mode = NavigationMode.drivingWithTraffic,
       bool simulateRoute = false,
       String language,
@@ -71,12 +71,6 @@ class MapboxNavigation {
     assert(destination.name != null);
     assert(destination.latitude != null);
     assert(destination.longitude != null);
-    assert(waypoints != null);
-    waypoints.forEach((stop) {
-      assert(stop.name != null);
-      assert(stop.latitude != null);
-      assert(stop.longitude != null);
-    });
 
     final Map<String, Object> args = <String, dynamic>{
       "originName": origin.name,
@@ -121,6 +115,19 @@ class MapboxNavigation {
   }
 }
 
+class RouteModel {
+  final List<dynamic> routes;
+  final List<dynamic> waypoints;
+  final code;
+
+  RouteModel(this.routes, this.waypoints, this.code);
+
+  RouteModel.fromJson(Map<String, dynamic> json)
+      : routes = json['routes'],
+        waypoints = json['waypoints'],
+        code = json['code'];
+}
+
 class Location {
   final String name;
   final double latitude;
@@ -128,6 +135,15 @@ class Location {
 
   Location(
       {@required this.name, @required this.latitude, @required this.longitude});
+
+  Map toJson() => {'name': name, 'latitude': latitude, 'longitude': longitude};
+}
+
+class Waypoints {
+  List<dynamic> waypoint;
+  Waypoints(
+    this.waypoint,
+  );
 }
 
 ///Option to specify the mode of transportation.
@@ -139,7 +155,6 @@ enum VoiceUnits { imperial, metric }
 class NavigationView extends StatefulWidget {
   final Location origin;
   final Location destination;
-  final List<Location> waypoints;
   final bool simulateRoute;
   final String language;
   final VoiceUnits units;
@@ -149,8 +164,7 @@ class NavigationView extends StatefulWidget {
       @required this.destination,
       this.simulateRoute,
       this.language,
-      this.units,
-      this.waypoints});
+      this.units});
 
   _NavigationViewState createState() => _NavigationViewState();
 }
@@ -167,7 +181,6 @@ class _NavigationViewState extends State<NavigationView> {
       "destinationName": widget.destination.name,
       "destinationLatitude": widget.destination.latitude,
       "destinationLongitude": widget.destination.longitude,
-      "stops": widget.waypoints,
       "simulateRoute": widget.simulateRoute,
       "language": widget.language,
       "units": widget.units
