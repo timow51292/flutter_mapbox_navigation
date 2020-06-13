@@ -12,7 +12,15 @@ public class SwiftFlutterMapboxNavigationPlugin: NSObject, FlutterPlugin, Flutte
     var _distanceRemaining: Double?
     var _durationRemaining: Double?
     var _navigationMode: String?
+    var _waypoints: [WaypointFromFlutter] = []
     
+    struct WaypointFromFlutter : Codable{
+        let name: String;
+        let latitude, longitude: Double;
+        
+    };
+    
+
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_mapbox_navigation", binaryMessenger: registrar.messenger())
     let eventChannel = FlutterEventChannel(name: "flutter_mapbox_navigation/arrival", binaryMessenger: registrar.messenger())
@@ -52,6 +60,15 @@ public class SwiftFlutterMapboxNavigationPlugin: NSObject, FlutterPlugin, Flutte
         guard let dLatitude = arguments?["destinationLatitude"] as? Double else {return}
         guard let dLongitude = arguments?["destinationLongitude"] as? Double else {return}
         
+        let waypointsJson = arguments?["waypoints"] as? String
+        if (waypointsJson != nil && !waypointsJson!.isEmpty){
+            
+            let _ : [WaypointFromFlutter] = []
+            let jsonData = waypointsJson!.data(using: .utf8)!
+            let decoder = JSONDecoder()
+            let json = try? decoder.decode([WaypointFromFlutter].self, from: jsonData)
+            _waypoints = json!
+        }
         let language = arguments?["language"] as? String
         let voiceUnits = arguments?["units"] as? String
         
@@ -84,10 +101,21 @@ public class SwiftFlutterMapboxNavigationPlugin: NSObject, FlutterPlugin, Flutte
         mode = .walking
     }
     
+    var coordinates : [Waypoint] = []
     let o = Waypoint(coordinate: CLLocationCoordinate2D(latitude: origin.latitude, longitude: origin.longitude), name: origin.name)
     let d = Waypoint(coordinate: CLLocationCoordinate2D(latitude: destination.latitude, longitude: destination.longitude), name: destination.name)
+    coordinates.append(o)
+    
+    
+    for point in _waypoints
+    {
+        let next = Waypoint(coordinate: CLLocationCoordinate2D(latitude: point.latitude, longitude: point.longitude), name: point.name)
+        coordinates.append(next)
+    }
+    coordinates.append(d)
+    
 
-    let options = NavigationRouteOptions(waypoints: [o, d], profileIdentifier: mode)
+    let options = NavigationRouteOptions(waypoints: coordinates, profileIdentifier: mode)
     
     if(units != nil)
     {
