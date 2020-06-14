@@ -115,19 +115,6 @@ class MapboxNavigation {
   }
 }
 
-class RouteModel {
-  final List<dynamic> routes;
-  final List<dynamic> waypoints;
-  final code;
-
-  RouteModel(this.routes, this.waypoints, this.code);
-
-  RouteModel.fromJson(Map<String, dynamic> json)
-      : routes = json['routes'],
-        waypoints = json['waypoints'],
-        code = json['code'];
-}
-
 class Location {
   final String name;
   final double latitude;
@@ -137,13 +124,6 @@ class Location {
       {@required this.name, @required this.latitude, @required this.longitude});
 
   Map toJson() => {'name': name, 'latitude': latitude, 'longitude': longitude};
-}
-
-class Waypoints {
-  List<dynamic> waypoint;
-  Waypoints(
-    this.waypoint,
-  );
 }
 
 ///Option to specify the mode of transportation.
